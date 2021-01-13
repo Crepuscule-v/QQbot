@@ -1,0 +1,29 @@
+[0m2021-01-14 00:00:34 V/Net 2121784398: Send: Heartbeat.Alive[0m
+[0m2021-01-14 00:00:34 V/Net 2121784398: Recv: Heartbeat.Alive.Response[0m
+[92m2021-01-14 00:03:49 I/Net 2121784398: Connected to server 42.81.169.46:8080[0m
+[0m2021-01-14 00:03:49 V/Net 2121784398: Send: wtlogin.login[0m
+[0m2021-01-14 00:03:50 V/Net 2121784398: Recv: WtLogin.Login.LoginPacketResponse.DeviceLockLogin[0m
+[0m2021-01-14 00:03:50 V/Net 2121784398: Send: wtlogin.login[0m
+[0m2021-01-14 00:03:50 V/Net 2121784398: Recv: LoginPacketResponse.Success[0m
+[92m2021-01-14 00:03:50 I/Net 2121784398: Login successful[0m
+[0m2021-01-14 00:03:50 V/Net 2121784398: Send: StatSvc.register[0m
+[0m2021-01-14 00:03:50 V/Net 2121784398: Recv: Response(StatSvc.register)[0m
+[0m2021-01-14 00:03:50 V/Net 2121784398: Send: StatSvc.GetDevLoginInfo[0m
+[0m2021-01-14 00:03:50 V/Net 2121784398: Recv: StatSvc.GetDevLoginInfo.Response(deviceList.size=1)[0m
+[92m2021-01-14 00:03:50 I/Net 2121784398: Syncing friend message history...[0m
+[0m2021-01-14 00:03:50 V/Net 2121784398: Send: MessageSvc.PbGetMsg[0m
+[92m2021-01-14 00:03:50 I/Net 2121784398: Syncing friend message history: Success.[0m
+[96m2021-01-14 00:03:53 D/Net 2121784398: Received unknown commandName: ConfigPushSvc.PushDomain[0m
+[0m2021-01-14 00:03:53 V/Net 2121784398: Recv: ConfigPushSvc.PushReq.PushReqResponse.Success[0m
+[0m2021-01-14 00:03:53 V/Net 2121784398: Send: ConfigPushSvc.PushResp[0m
+[0m2021-01-14 00:03:58 V/Net 2121784398: Recv: ConfigPushSvc.PushReq.PushReqResponse.Success[0m
+[0m2021-01-14 00:03:58 V/Net 2121784398: Send: ConfigPushSvc.PushResp[0m
+[0m2021-01-14 00:04:22 V/Net 2121784398: Recv: RequestPushNotify(uin=2121784398, ctype=1, strService=MessageSvc, strCmd=PushNotify, usMsgType=166, stMsgInfo=net.mamoe.mirai.internal.network.protocol.data.jce.MsgInfo@79de8ec7)[0m
+[0m2021-01-14 00:04:22 V/Net 2121784398: Send: MessageSvc.PbGetMsg[0m
+[0m2021-01-14 00:04:22 V/Net 2121784398: Send: MessageSvc.PbDeleteMsg[0m
+[0m2021-01-14 00:04:22 V/Net 2121784398: Send: MessageSvc.PbSendMsg[0m
+[0m2021-01-14 00:04:23 V/Net 2121784398: Recv: MessageSvcPbSendMsg.Response.SUCCESS[0m
+[0m2021-01-14 00:08:20 V/Net 2121784398: Send: Heartbeat.Alive[0m
+[0m2021-01-14 00:08:20 V/Net 2121784398: Recv: Heartbeat.Alive.Response[0m
+[0m2021-01-14 00:12:50 V/Net 2121784398: Send: Heartbeat.Alive[0m
+[0m2021-01-14 00:12:50 V/Net 2121784398: Recv: Heartbeat.Alive.Response[0m
