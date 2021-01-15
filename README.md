@@ -1,4 +1,4 @@
-# 一个简单的QQ聊天机器人
+# 一个简单的QQ机器人
 
 #### Based on [`Graia`](https://github.com/GraiaProject/Application)
 
