@@ -1,4 +1,6 @@
 import asyncio
+import getImage
+import re
 from config import configs as myconfigs
 from graia.broadcast import Broadcast
 from graia.application import GraiaMiraiApplication, Session
@@ -6,18 +8,19 @@ from graia.application.message.chain import MessageChain
 from graia.application.group import Group, Member
 from graia.broadcast.interrupt import InterruptControl
 from graia.broadcast.interrupt.waiter import Waiter
-from graia.application.message.elements.internal import Plain, At, Image
+from graia.application.message.elements.internal import Plain, At, Image, App
 from graia.application.friend import Friend
 from graia.application.event.messages import GroupMessage 
-import getImage
 from weather import get_weather, get_city_code
+from Baidupedia import QueryPedia, get_movie
 
 
 def Menu() -> str:
     menu = '''
-我现在可以帮您做的事情有：
-1. [查询天气]：             格式：   /天气 城市                         
-2. [获取NBA球星图]          格式：   /NBA球星照片
+我可以帮您做的事情有:
+1. [查询天气]                 格式：   /天气 城市
+2. [来一张NBA球星图]           格式：   /NBA球星照
+3. [解释您想知道的词语]        格式:    /求问 关键词
 3. [...开发中] '''
     return menu
 
@@ -81,14 +84,15 @@ async def group_messsage_handler(
         ]))
     
     elif message.asDisplay().startswith("/天气"):
-        msg = message.split(" ")
+        msg = message.asDisplay()
+        msg = re.split(r' +', msg)
         if (msg.__len__() != 2) :
             await app.sendGroupMessage(group, MessageChain.create([
                 At(member.id),
                 Plain("您的查询格式错误哦, 应该为'/天气 城市', 请您重新输入~")
             ]))
         else :
-            city = msg[1].asDisplay()
+            city = msg[1]
             city_code = city_code_dict[city]
             wea_list = await get_weather(city, city_code)
             wea_dict = wea_list[1]
@@ -101,6 +105,46 @@ async def group_messsage_handler(
                 Plain(string),
                 Plain("数据来源: 中国天气网 " + wea_list[0])
             ]))
+    elif message.asDisplay().startswith("/求问"):
+        msg = message.asDisplay()
+        msg = re.split(r' +', msg)
+        if (msg.__len__() != 2):
+            await app.sendGroupMessage(group, MessageChain.create([
+                At(member.id),
+                Plain("您的查询格式是错误的哦, 应该为'/求问 关键词', 请您重新输入一遍~")
+            ]))
+        else :
+            Keyword = msg[1]
+            if Keyword == "李培宁" or Keyword == "刘培栋" or Keyword == "龙儿子":
+                await app.sendGroupMessage(group, MessageChain.create([
+                    At(member.id),
+                    Plain("\n他太菜了，我才不查他呢，哼~")
+                ]))
+            elif Keyword == myconfigs["OwnerName"]:
+                await app.sendGroupMessage(group, MessageChain.create([
+                    At(member.id),
+                    Plain("\nwoooo~，你也认识他嘛！他超帅的！")
+                ]))
+            else:
+                ans = QueryPedia(Keyword)
+                ans_url = get_movie(Keyword)
+                await app.sendGroupMessage(group, MessageChain.create([
+                    At(member.id),
+                    Plain("\n" + ans),
+                ]))
+                await asyncio.sleep(2)
+                if(ans_url != "") :
+                    await app.sendGroupMessage(group, MessageChain.create([
+                    Plain(f'有关 [{Keyword}] 的短视频介绍在这里哦~\n' + ans_url)
+                ]))
+    # elif message.asDisplay().startswith("/ban"):
+    #     if (message.has(At)):
+            # At_list = message.get(At)
+            
+
+
+
+
 
 @bcc.receiver("FriendMessage")
 async def friend_message_listener(
@@ -109,13 +153,14 @@ async def friend_message_listener(
     friend: Friend
 ):
     if message.asDisplay().startswith("/天气"):
-        msg = message.split(" ")
+        msg = message.asDisplay()
+        msg = re.split(r' +', msg)
         if (msg.__len__() != 2) :
             await app.sendFriendMessage(friend, MessageChain.create([
-                Plain("您的查询格式错误哦, 应该为'/天气 城市', 请您重新输入~")
+                Plain("您的查询格式是错误的哦, 应该为'/天气 城市', 请您重新输入~")
             ]))
         else :
-            city = msg[1].asDisplay()
+            city = msg[1]
             city_code = city_code_dict[city]
             wea_list = await get_weather(city, city_code)
             wea_dict = wea_list[1]

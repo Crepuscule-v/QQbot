@@ -57,5 +57,3 @@ async def get_weather(city : str, city_code : str) -> list:
 
         weather[date] = wea_list        
     return (url, weather)
-
-# print(get_city_code("纽约"))
