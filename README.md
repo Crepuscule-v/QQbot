@@ -2,7 +2,7 @@
 
 #### Based on [`Graia`](https://github.com/GraiaProject/Application)
 
-***Existing function***
+***Existing function :***
 - [x] 查询天气
 - [x] 发送一张NBA球星图
 - [x] Q&A | 词语释义
