@@ -4,6 +4,7 @@ import aiohttp
 from config import configs as myconfigs
 from config import NameList as NameList
 from config import SpecialNameList as SpecialNameList
+from config import SpecialMessage as SpecialMessage
 from graia.broadcast import Broadcast
 from graia.application import GraiaMiraiApplication, Session
 from graia.application.message.chain import MessageChain 
@@ -20,13 +21,13 @@ from function.getMusic import getKugouMusic
 
 def Menu() -> str:
     menu = "\n"
-    menu += "我是McBot, 我可以帮您做的事情有:\n"
+    menu += f"我是{myconfigs['BotName']}, 我可以帮您做的事情有:\n"
     menu += "1. [查询天气]                           格式：   /天气 城市\n"
-    menu += "2. [图片]                                  格式：   /求图 关键词 整数[可选]\n"
-    menu += "3. [解释您想知道的词语]         格式:      /求问 关键词\n"
-    menu += "4. [点歌]                                  格式:      /点歌 歌名\n"
+    menu += "2. [图片]                                  格式：   /求图 关键词 整数[Optional]\n"
+    menu += "3. [解释您想知道的词语]         格式:      /求问 第一关键词 第二关键词[Optional]\n"
+    menu += "4. [点歌]                                  格式:      /点歌《歌名》\n"
     menu += "5. [未完待续……]\n"
-    menu += "您尽管吩咐~~"
+    menu += "您有什么需要尽管吩咐~~"
     return menu
 
 city_code_dict = get_city_code()
@@ -85,7 +86,7 @@ async def group_messsage_handler(
         if msg.__len__() > 3 or msg.__len__() <= 1:
             await app.sendGroupMessage(group, MessageChain.create([
                 At(member.id),
-                Plain("\n您的查询格式错误哦, 应该为'/求图 关键词 整数[可选]', 请您重新输入~")
+                Plain("\n不要捣乱哦，要遵守输入格式 : '/求图 关键词 整数[可选]', 请您重新输入~")
             ]))
         elif msg.__len__() == 2:
             img_url_list = await get_normal_image(msg[1])
@@ -131,7 +132,7 @@ async def group_messsage_handler(
         if (msg.__len__() != 2) :
             await app.sendGroupMessage(group, MessageChain.create([
                 At(member.id),
-                Plain("您的查询格式错误哦, 应该为'/天气 城市', 请您重新输入~")
+                Plain("不要捣乱哦，要遵守输入格式 : '/天气 城市', 请您重新输入~")
             ]))
         else :
             city = msg[1]
@@ -150,79 +151,75 @@ async def group_messsage_handler(
     elif message.asDisplay().startswith("/求问"):
         msg = message.asDisplay()
         msg = re.split(r' +', msg)
-        if (msg.__len__() != 2):
+        if msg.__len__() > 3 or msg.__len__() <= 1:
             await app.sendGroupMessage(group, MessageChain.create([
                 At(member.id),
-                Plain("您的查询格式是错误的哦, 应该为'/求问 关键词', 请您重新输入一遍~")
+                Plain("\n不要捣乱哦，要遵守输入格式 : '/求问 第一关键词 第二关键词[Optional]', 请您重新输入一遍~")
             ]))
         else :
-            Keyword = msg[1]
-            if Keyword in NameList:
+            firstKeyword = msg[1]
+            if firstKeyword in NameList:
                 await app.sendGroupMessage(group, MessageChain.create([
                     At(member.id),
-                    Plain("\n" + Keyword + "太丑了，我才不查他呢，哼~")
+                    Plain("\n" + firstKeyword + "太丑了，我才不查他呢，哼~")
                 ]))
-            elif Keyword in SpecialNameList:
+            elif firstKeyword in SpecialNameList:
                 await app.sendGroupMessage(group, MessageChain.create([
                     At(member.id),
-                    Plain("\n噢，你说" + Keyword + "啊，她是我主人的儿子[doge]~")
+                    Plain("\n噢，你说" + firstKeyword + "啊，她是我主人的儿子[doge]~")
                 ]))
-            elif Keyword == myconfigs["OwnerName"]:
+            elif firstKeyword == myconfigs["OwnerName"]:
                 await app.sendGroupMessage(group, MessageChain.create([
                     At(member.id),
                     Plain("\nwoo~，你也想知道他嘛，我的主人超强的~")
                 ]))
-            elif Keyword == "白敬亭女朋友":
+            elif firstKeyword == "白敬亭女朋友":
                 await app.sendGroupMessage(group, MessageChain.create([
                     At(member.id),
                     Plain("\n他现在还单身哦~~你要加油啦！")
                 ]))
-            elif Keyword == "张丹":
+            elif firstKeyword == "张丹":
                 await app.sendGroupMessage(group, MessageChain.create([
                     At(member.id),
-                    Plain("\n张丹，1998年7月1日出生于山西。演员白敬亭的未婚妻。\n现就职于山西省太原市大马新村某五百强企业，月薪高达四位数，即将步入人生巅峰！")
+                    Plain("\n{}".format(SpecialMessage[firstKeyword]))
                 ]))
-            elif Keyword == "陈露":
+            elif firstKeyword == "陈露":
                 await app.sendGroupMessage(group, MessageChain.create([
                     At(member.id),
-                    Plain("\n陈露，女，1996年出生于山西。演员肖战未婚妻。其恋情因2019年《陈情令》播出被爆出并受到广泛关注，近日，肖战工作室发声明称两人将于2022年2月14日领证完婚。")
+                    Plain("\n{}".format(SpecialMessage[firstKeyword]))
                 ]))
             else:
-                ans = QueryPedia(Keyword)
-                ans_url = get_movie(Keyword)
+                if msg.__len__() == 3:
+                    ans = await QueryPedia(firstKeyword, msg[2])
+                else :
+                    ans = await QueryPedia(firstKeyword)
+                brief_introduction = ans[0]
+                movie_url = ans[1]
                 await app.sendGroupMessage(group, MessageChain.create([
                     At(member.id),
-                    Plain("\n" + ans),
+                    Plain("\n" + brief_introduction)
                 ]))
-                await asyncio.sleep(2)
-                if(ans_url != "") :
+                if(movie_url != "") :
                     await app.sendGroupMessage(group, MessageChain.create([
-                    Plain(f'有关 [{Keyword}] 的短视频介绍在这里哦~\n' + ans_url)
+                    Plain(f'有关 [{firstKeyword}] 的短视频介绍在这里哦~\n' + movie_url)
                 ]))
     elif message.asDisplay().startswith("/点歌"):
         msg = message.asDisplay()
-        msg = re.split(r' +', msg)
-        if msg.__len__() != 2:
-            await app.sendGroupMessage(group, MessageChain.create([
-                At(member.id),
-                Plain("您的查询格式是错误的哦, 应该为'/点歌 歌名', 请您重新输入一遍~")
-            ]))
-        else :
-            song_data_dict = await getKugouMusic(msg[1])
-            msg_to_send = "\n{}\n歌手：{}\n专辑：{}\n".format(song_data_dict["song_name"], song_data_dict["singer_name"], song_data_dict["album_name"])
-            await app.sendGroupMessage(group, MessageChain.create([
-                At(member.id),
-                Plain(msg_to_send),
-                Image.fromNetworkAddress(song_data_dict["img_url"]),
-                Plain(song_data_dict["lyrics"]),
-                Plain(song_data_dict["song_url"])
-            ]))
-    elif message.has(At) and message.get(At)[0].target == 2121784398:
+        msg = re.search(r'(《.*》)', msg)
+        song_data_dict = await getKugouMusic(msg[1])
+        msg_to_send = "\n{}\n歌手：{}\n专辑：{}\n".format(song_data_dict["song_name"], song_data_dict["singer_name"], song_data_dict["album_name"])
+        await app.sendGroupMessage(group, MessageChain.create([
+            At(member.id),
+            Plain(msg_to_send),
+            Image.fromNetworkAddress(song_data_dict["img_url"]),
+            Plain(song_data_dict["lyrics"]),
+            Plain(song_data_dict["song_url"])
+        ]))
+    elif message.has(At) and message.get(At)[0].target == myconfigs["account"]:
         await app.sendGroupMessage(group, MessageChain.create([
             At(member.id),
             Plain(Menu())
         ]))
-
 
 @bcc.receiver("FriendMessage")
 async def friend_message_listener(
@@ -235,7 +232,7 @@ async def friend_message_listener(
         msg = re.split(r' +', msg)
         if (msg.__len__() != 2) :
             await app.sendFriendMessage(friend, MessageChain.create([
-                Plain("您的查询格式是错误的哦, 应该为'/天气 城市', 请您重新输入~"),
+                Plain("不要捣乱哦，要遵守输入格式 : '/天气 城市', 请您重新输入~"),
             ]))
         else :
             city = msg[1]

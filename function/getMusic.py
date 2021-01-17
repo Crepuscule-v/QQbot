@@ -18,18 +18,19 @@ async def getKugouMusic(song_name : str, singer_name : str = None) -> dict:
     AlbumID = music_data["AlbumID"]
     FileHash = music_data["FileHash"]
     url_2 = "https://wwwapi.kugou.com/yy/index.php?r=play/getdata&hash={}&album_id={}".format(FileHash, AlbumID)
+    print (url_2)
     r_2 = requests.get(url_2, headers=headers)
     r_2.encoding = 'utf-8'
     song_data = json.loads(r_2.text)["data"]
     song_url = song_data["play_url"]
     img_url = song_data["img"]
+    song_name = song_data["song_name"]
     singer_name = song_data["author_name"]
     album_name = song_data["album_name"]
     lyrics = song_data["lyrics"]
     lyrics_list = re.findall(r'\[\d\d:\d\d.\d\d\](.*)?\n', lyrics)
     lyrics = ""
     for item in lyrics_list:
-        print(item)
         lyrics += item
     song_url = re.sub(r'\\', '', song_url)
     img_url = re.sub(r'\\', '', img_url)
@@ -44,4 +45,4 @@ async def getKugouMusic(song_name : str, singer_name : str = None) -> dict:
     return song_data_dict
 
 if __name__ == "__main__":
-    asyncio.run(getKugouMusic("明天,你好"))
+    print(asyncio.run(getKugouMusic("明天,你好")))
