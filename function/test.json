@@ -1,0 +1,38 @@
+{
+    "status": 1,
+    "err_code": 0,
+    "data": {
+        "hash": "FC162E5E4CB8E1543CC1B7AD43D7DC6A",
+        "timelength": 271856,
+        "filesize": 4351361,
+        "audio_name": "\u725b\u5976\u5496\u5561 - \u660e\u5929,\u4f60\u597d",
+        "have_album": 1,
+        "album_name": "Lost & Found\u53bb\u5bfb\u627e",
+        "album_id": "967562",
+        "img": "http:\/\/imge.kugou.com\/stdmusic\/20200909\/20200909140138998419.jpg",
+        "have_mv": 1,
+        "video_id": "593187",
+        "author_name": "\u725b\u5976\u5496\u5561",
+        "song_name": "\u660e\u5929,\u4f60\u597d",
+        "lyrics": "\ufeff[id:$00000000]\r\n[ar:\u725b\u5976\u5496\u5561]\r\n[ti:\u660e\u5929,\u4f60\u597d]\r\n[by:]\r\n[hash:fc162e5e4cb8e1543cc1b7ad43d7dc6a]\r\n[al:]\r\n[sign:]\r\n[qq:]\r\n[total:271983]\r\n[offset:0]\r\n[00:00.41]\u725b\u5976\u5496\u5561 - \u660e\u5929,\u4f60\u597d\r\n[00:01.96]\u4f5c\u8bcd\uff1a\u738b\u6d77\u6d9b\r\n[00:02.91]\u4f5c\u66f2\uff1a\u725b\u5976\u5496\u5561\r\n[00:23.83]\u770b\u6628\u5929\u7684\u6211\u4eec\u8d70\u8fdc\u4e86\r\n[00:28.31]\u5728\u547d\u8fd0\u5e7f\u573a\u4e2d\u592e\u7b49\u5f85\r\n[00:33.46]\u90a3\u6a21\u7cca\u7684\u80a9\u8180\r\n[00:36.59]\u8d8a\u5954\u8dd1\u8d8a\u6e3a\u5c0f\r\n[00:43.42]\u66fe\u7ecf\u5e76\u80a9\u5f80\u524d\u7684\u4f19\u4f34\r\n[00:48.32]\u5728\u4e3e\u676f\u795d\u798f\u540e\u90fd\u8d70\u6563\r\n[00:53.52]\u53ea\u662f\u90a3\u4e2a\u591c\u665a\r\n[00:56.52]\u6211\u6df1\u6df1\u7684\u90fd\u7559\u85cf\u5728\u5fc3\u574e\r\n[01:00.87]\u957f\u5927\u4ee5\u540e\u6211\u53ea\u80fd\u5954\u8dd1\r\n[01:05.97]\u6211\u591a\u5bb3\u6015\u9ed1\u6697\u4e2d\u8dcc\u5012\r\n[01:10.87]\u660e\u5929\u4f60\u597d\u542b\u7740\u6cea\u5fae\u7b11\r\n[01:15.87]\u8d8a\u7f8e\u597d\u8d8a\u5bb3\u6015\u5f97\u5230\r\n[01:20.98]\u6bcf\u4e00\u6b21\u54ed\r\n[01:23.28]\u53c8\u7b11\u7740\u5954\u8dd1\r\n[01:25.83]\u4e00\u8fb9\u5931\u53bb\u4e00\u8fb9\u5728\u5bfb\u627e\r\n[01:30.93]\u660e\u5929\u4f60\u597d\u58f0\u97f3\u591a\u6e3a\u5c0f\r\n[01:35.88]\u5374\u63d0\u9192\u6211\r\n[01:40.83]\u52c7\u6562\u662f\u4ec0\u4e48\r\n[02:03.50]\u5f53\u6211\u671d\u7740\u53cd\u65b9\u5411\u8d70\u53bb\r\n[02:08.45]\u5728\u697c\u68af\u7684\u89d2\u843d\u627e\u52c7\u6c14\r\n[02:13.50]\u6296\u7740\u80a9\u8180\u54ed\u6ce3\r\n[02:16.55]\u95ee\u81ea\u5df1\u5728\u54ea\u91cc\r\n[02:23.66]\u66fe\u7ecf\u5e76\u80a9\u5f80\u524d\u7684\u4f19\u4f34\r\n[02:28.41]\u6c89\u9ed8\u7740\u61c2\u5f97\u6211\u7684\u59d4\u5c48\r\n[02:33.49]\u65f6\u95f4\u5b83\u603b\u8bf4\u8c0e\r\n[02:36.52]\u6211\u4ece\u4e0d\u66fe\u5931\u53bb\u90a3\u4e9b\u80a9\u8180\r\n[02:40.72]\u957f\u5927\u4ee5\u540e\r\n[02:43.37]\u6211\u53ea\u80fd\u5954\u8dd1\r\n[02:45.97]\u6211\u591a\u5bb3\u6015\u9ed1\u6697\u4e2d\u8dcc\u5012\r\n[02:50.97]\u660e\u5929\u4f60\u597d\u542b\u7740\u6cea\u5fae\u7b11\r\n[02:56.07]\u8d8a\u7f8e\u597d\u8d8a\u5bb3\u6015\u5f97\u5230\r\n[03:00.72]\u6bcf\u4e00\u6b21\u54ed\r\n[03:03.27]\u53c8\u7b11\u7740\u5954\u8dd1\r\n[03:06.02]\u4e00\u8fb9\u5931\u53bb\u4e00\u8fb9\u5728\u5bfb\u627e\r\n[03:10.97]\u660e\u5929\u4f60\u597d\u58f0\u97f3\u591a\u6e3a\u5c0f\r\n[03:15.87]\u5374\u63d0\u9192\u6211\r\n[03:20.87]\u957f\u5927\u4ee5\u540e\r\n[03:23.17]\u6211\u53ea\u80fd\u5954\u8dd1\r\n[03:25.97]\u6211\u591a\u5bb3\u6015\u9ed1\u6697\u4e2d\u8dcc\u5012\r\n[03:30.92]\u660e\u5929\u4f60\u597d\u542b\u7740\u6cea\u5fae\u7b11\r\n[03:36.24]\u8d8a\u7f8e\u597d\u8d8a\u5bb3\u6015\u5f97\u5230\r\n[03:40.74]\u6bcf\u4e00\u6b21\u54ed\r\n[03:43.26]\u53c8\u7b11\u7740\u5954\u8dd1\r\n[03:45.91]\u4e00\u8fb9\u5931\u53bb\u4e00\u8fb9\u5728\u5bfb\u627e\r\n[03:50.91]\u660e\u5929\u4f60\u597d\u58f0\u97f3\u591a\u6e3a\u5c0f\r\n[03:55.91]\u5374\u63d0\u9192\u6211\r\n[04:00.91]\u52c7\u6562\u662f\u4ec0\u4e48\r\n",
+        "author_id": "8363",
+        "privilege": 8,
+        "privilege2": "1000",
+        "play_url": "https:\/\/webfs.yun.kugou.com\/202101171952\/784410548b5e445473978eedf3adf89b\/G205\/M06\/02\/00\/DQ4DAF5wVC6AFF_FAEJlgSiNIZA279.mp3",
+        "authors": [
+            {
+                "author_id": "8363",
+                "author_name": "\u725b\u5976\u5496\u5561",
+                "is_publish": "1",
+                "sizable_avatar": "http:\/\/singerimg.kugou.com\/uploadpic\/softhead\/{size}\/20201112\/20201112100819546.jpg",
+                "avatar": "http:\/\/singerimg.kugou.com\/uploadpic\/softhead\/400\/20201112\/20201112100819546.jpg"
+            }
+        ],
+        "is_free_part": 0,
+        "bitrate": 128,
+        "recommend_album_id": "967562",
+        "audio_id": "3553256",
+        "has_privilege": true,
+        "play_backup_url": "https:\/\/webfs.cloud.kugou.com\/202101171952\/f374798fa8b504f2bb7c3f5f076f4c0d\/G205\/M06\/02\/00\/DQ4DAF5wVC6AFF_FAEJlgSiNIZA279.mp3"
+    }
+}
