@@ -34,7 +34,6 @@ def QueryPedia(keyword : str) -> str:
     ans = re.sub(r'\[.*\]|\s', '', ans)
     return ans
 
-
 def get_movie(keyword : str):
     url_1 = "https://baike.baidu.com/item/" + keyword
     headers = {
@@ -62,3 +61,4 @@ def get_movie(keyword : str):
     #     for chunk in req.iter_content(chunk_size=10000):  
             # if chunk:
                 # f.write(chunk)
+

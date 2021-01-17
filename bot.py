@@ -1,27 +1,32 @@
 import asyncio
-import getImage
 import re
+import aiohttp
 from config import configs as myconfigs
+from config import NameList as NameList
+from config import SpecialNameList as SpecialNameList
 from graia.broadcast import Broadcast
 from graia.application import GraiaMiraiApplication, Session
 from graia.application.message.chain import MessageChain 
 from graia.application.group import Group, Member
 from graia.broadcast.interrupt import InterruptControl
 from graia.broadcast.interrupt.waiter import Waiter
-from graia.application.message.elements.internal import Plain, At, Image, App
+from graia.application.message.elements.internal import Plain, At, Image, App, Xml, Json
 from graia.application.friend import Friend
 from graia.application.event.messages import GroupMessage 
-from weather import get_weather, get_city_code
-from Baidupedia import QueryPedia, get_movie
-
+from function.getImage import get_normal_image
+from function.getWeather import get_weather, get_city_code
+from function.Baidupedia import QueryPedia, get_movie
+from function.getMusic import getKugouMusic
 
 def Menu() -> str:
-    menu = '''
-我可以帮您做的事情有:
-1. [查询天气]                 格式：   /天气 城市
-2. [来一张NBA球星图]           格式：   /NBA球星照
-3. [解释您想知道的词语]        格式:    /求问 关键词
-3. [...开发中] '''
+    menu = "\n"
+    menu += "我是McBot, 我可以帮您做的事情有:\n"
+    menu += "1. [查询天气]                           格式：   /天气 城市\n"
+    menu += "2. [图片]                                  格式：   /求图 关键词 整数[可选]\n"
+    menu += "3. [解释您想知道的词语]         格式:      /求问 关键词\n"
+    menu += "4. [点歌]                                  格式:      /点歌 歌名\n"
+    menu += "5. [未完待续……]\n"
+    menu += "您尽管吩咐~~"
     return menu
 
 city_code_dict = get_city_code()
@@ -69,20 +74,57 @@ async def group_messsage_handler(
         await app.sendGroupMessage(group, MessageChain.create([
             Plain("执行完毕")
         ]))
-    
-    elif message.asDisplay().startswith("/menu"):
+    elif message.asDisplay().startswith("/Menu"):
         await app.sendGroupMessage(group, MessageChain.create([
             At(member.id),
             Plain(Menu())
         ]))
-    
-    elif message.asDisplay().startswith("/NBA球星照片"):
-        img_url = await getImage.get_d77_image()
-        await app.sendGroupMessage(group, MessageChain.create([
-            At(member.id),
-            Image.fromNetworkAddress(img_url)
-        ]))
-    
+    elif message.asDisplay().startswith("/求图"):
+        msg = message.asDisplay()
+        msg = re.split(r' +', msg)
+        if msg.__len__() > 3 or msg.__len__() <= 1:
+            await app.sendGroupMessage(group, MessageChain.create([
+                At(member.id),
+                Plain("\n您的查询格式错误哦, 应该为'/求图 关键词 整数[可选]', 请您重新输入~")
+            ]))
+        elif msg.__len__() == 2:
+            img_url_list = await get_normal_image(msg[1])
+            await app.sendGroupMessage(group, MessageChain.create([
+                At(member.id),
+                Plain("\n您要的图~ "),
+                Image.fromNetworkAddress(img_url_list[0])
+            ]))
+        else :
+            if re.search(r'\D', msg[2]) != None:
+                await app.sendGroupMessage(group, MessageChain.create([
+                At(member.id),
+                Plain("\n您输入的数字有问题哦~, 请您重新输入 "),
+            ]))
+            else :
+                num = int(msg[2])
+            img_url_list = await get_normal_image(msg[1], num)
+            msg_to_send = ""
+            if img_url_list.__len__() < num:
+                await app.sendGroupMessage(group, MessageChain.create([
+                    At(member.id),
+                    Plain("\n您要的太多了，小的只能找到这么多[卑微~]")
+                ]))
+            else:
+                await app.sendGroupMessage(group, MessageChain.create([
+                    At(member.id),
+                    Plain("\n您要的图~ ")
+                ]))
+            i = 0
+            while i < img_url_list.__len__():
+                # 有异常时 else 不执行， 无异常时 else 执行
+                try:
+                    await app.sendGroupMessage(group, MessageChain.create([
+                        Image.fromNetworkAddress(img_url_list[i])
+                        ]))
+                except aiohttp.client_exceptions.InvalidURL:
+                    pass 
+                finally:
+                    i += 1
     elif message.asDisplay().startswith("/天气"):
         msg = message.asDisplay()
         msg = re.split(r' +', msg)
@@ -115,15 +157,35 @@ async def group_messsage_handler(
             ]))
         else :
             Keyword = msg[1]
-            if Keyword == "李培宁" or Keyword == "刘培栋" or Keyword == "龙儿子":
+            if Keyword in NameList:
                 await app.sendGroupMessage(group, MessageChain.create([
                     At(member.id),
-                    Plain("\n他太菜了，我才不查他呢，哼~")
+                    Plain("\n" + Keyword + "太丑了，我才不查他呢，哼~")
+                ]))
+            elif Keyword in SpecialNameList:
+                await app.sendGroupMessage(group, MessageChain.create([
+                    At(member.id),
+                    Plain("\n噢，你说" + Keyword + "啊，她是我主人的儿子[doge]~")
                 ]))
             elif Keyword == myconfigs["OwnerName"]:
                 await app.sendGroupMessage(group, MessageChain.create([
                     At(member.id),
-                    Plain("\nwoooo~，你也认识他嘛！他超帅的！")
+                    Plain("\nwoo~，你也想知道他嘛，我的主人超强的~")
+                ]))
+            elif Keyword == "白敬亭女朋友":
+                await app.sendGroupMessage(group, MessageChain.create([
+                    At(member.id),
+                    Plain("\n他现在还单身哦~~你要加油啦！")
+                ]))
+            elif Keyword == "张丹":
+                await app.sendGroupMessage(group, MessageChain.create([
+                    At(member.id),
+                    Plain("\n张丹，1998年7月1日出生于山西。演员白敬亭的未婚妻。\n现就职于山西省太原市大马新村某五百强企业，月薪高达四位数，即将步入人生巅峰！")
+                ]))
+            elif Keyword == "陈露":
+                await app.sendGroupMessage(group, MessageChain.create([
+                    At(member.id),
+                    Plain("\n陈露，女，1996年出生于山西。演员肖战未婚妻。其恋情因2019年《陈情令》播出被爆出并受到广泛关注，近日，肖战工作室发声明称两人将于2022年2月14日领证完婚。")
                 ]))
             else:
                 ans = QueryPedia(Keyword)
@@ -137,13 +199,29 @@ async def group_messsage_handler(
                     await app.sendGroupMessage(group, MessageChain.create([
                     Plain(f'有关 [{Keyword}] 的短视频介绍在这里哦~\n' + ans_url)
                 ]))
-    # elif message.asDisplay().startswith("/ban"):
-    #     if (message.has(At)):
-            # At_list = message.get(At)
-            
-
-
-
+    elif message.asDisplay().startswith("/点歌"):
+        msg = message.asDisplay()
+        msg = re.split(r' +', msg)
+        if msg.__len__() != 2:
+            await app.sendGroupMessage(group, MessageChain.create([
+                At(member.id),
+                Plain("您的查询格式是错误的哦, 应该为'/点歌 歌名', 请您重新输入一遍~")
+            ]))
+        else :
+            song_data_dict = await getKugouMusic(msg[1])
+            msg_to_send = "\n{}\n歌手：{}\n专辑：{}\n".format(song_data_dict["song_name"], song_data_dict["singer_name"], song_data_dict["album_name"])
+            await app.sendGroupMessage(group, MessageChain.create([
+                At(member.id),
+                Plain(msg_to_send),
+                Image.fromNetworkAddress(song_data_dict["img_url"]),
+                Plain(song_data_dict["lyrics"]),
+                Plain(song_data_dict["song_url"])
+            ]))
+    elif message.has(At) and message.get(At)[0].target == 2121784398:
+        await app.sendGroupMessage(group, MessageChain.create([
+            At(member.id),
+            Plain(Menu())
+        ]))
 
 
 @bcc.receiver("FriendMessage")
@@ -157,7 +235,7 @@ async def friend_message_listener(
         msg = re.split(r' +', msg)
         if (msg.__len__() != 2) :
             await app.sendFriendMessage(friend, MessageChain.create([
-                Plain("您的查询格式是错误的哦, 应该为'/天气 城市', 请您重新输入~")
+                Plain("您的查询格式是错误的哦, 应该为'/天气 城市', 请您重新输入~"),
             ]))
         else :
             city = msg[1]
