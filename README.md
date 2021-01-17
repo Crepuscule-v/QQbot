@@ -5,7 +5,7 @@
 ***Existing function :***
 - [x] 查询天气
 - [x] 搜图
-- [x] Q&A | 词语释义
+- [x] Q&A | 词语释义 : 支持 Second Key Word
 - [x] 点歌
 
 ***TO DO LIST :***
