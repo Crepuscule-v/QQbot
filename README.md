@@ -13,4 +13,4 @@
 - [ ] 学习 python asyncio & 异步机制
 - [ ] 实现QQBot更多好玩的功能
 
-## **Fighting**
+## **Fighting!!**
