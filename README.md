@@ -1,6 +1,6 @@
 # A Simple QQbot
 
-#### Base on [`Graia`](https://github.com/GraiaProject/Application)
+#### Base on : [`Graia`](https://github.com/GraiaProject/Application)
 
 ***Existing function :***
 - [x] 查询天气
