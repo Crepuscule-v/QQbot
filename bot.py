@@ -1,10 +1,10 @@
 import asyncio
 import re
 import aiohttp
-from config import configs as myconfigs
-from config import NameList as NameList
-from config import SpecialNameList as SpecialNameList
-from config import SpecialMessage as SpecialMessage
+from function.config import configs as myconfigs
+from function.config import NameList as NameList
+from function.config import SpecialNameList as SpecialNameList
+from function.config import SpecialMessage as SpecialMessage
 from graia.broadcast import Broadcast
 from graia.application import GraiaMiraiApplication, Session
 from graia.application.message.chain import MessageChain 
@@ -14,10 +14,7 @@ from graia.broadcast.interrupt.waiter import Waiter
 from graia.application.message.elements.internal import Plain, At, Image, App, Xml, Json
 from graia.application.friend import Friend
 from graia.application.event.messages import GroupMessage 
-from function.getImage import get_normal_image
-from function.getWeather import get_weather, get_city_code
-from function.Baidupedia import QueryPedia, get_movie
-from function.getMusic import getKugouMusic
+from function import getImage, getWeather, Baidupedia, getMusic, getSinaweibo
 
 def Menu() -> str:
     menu = "\n"
@@ -26,17 +23,18 @@ def Menu() -> str:
     menu += "2. [图片]                                  格式：   /求图 关键词 整数[Optional]\n"
     menu += "3. [解释您想知道的词语]         格式:      /求问 第一关键词 第二关键词[Optional]\n"
     menu += "4. [点歌]                                  格式:      /点歌《歌名》\n"
+    menu += "5. [爬取个人微博内容]            格式:       /微博 昵称 数量(1~5|默认为2|0只获取个人信息)\n"
     menu += "5. [未完待续……]\n"
-    menu += "您有什么需要尽管吩咐~~"
+    menu += "您有什么需要尽管吩咐, 但要自觉遵守输入规则哦~~"
     return menu
 
-city_code_dict = get_city_code()
+city_code_dict = getWeather.get_city_code()
 
 loop = asyncio.get_event_loop()
 bcc = Broadcast(loop=loop)
 app = GraiaMiraiApplication(
-    broadcast=bcc,
-    connect_info=Session(
+    broadcast = bcc,
+    connect_info = Session(
         host = myconfigs["host"],   # 填入 httpapi 服务运行的地址
         authKey = myconfigs["authKey"],     # 填入 authKey
         account = myconfigs["account"],     # 你的机器人的 qq 号
@@ -44,10 +42,6 @@ app = GraiaMiraiApplication(
     )
 )
 inc = InterruptControl(bcc)
-
-# 函数中
-# 冒号后面跟的是参数的建议类型
-# -> 后面跟的是返回值的建议类型
 
 @bcc.receiver("GroupMessage")
 async def group_messsage_handler(
@@ -57,9 +51,8 @@ async def group_messsage_handler(
     if message.asDisplay().startswith("/need_confirm"):
         await app.sendGroupMessage(group, MessageChain.create([
             At(member.id),
-            Plain("发送 /confirm 以继续运行")
+            Plain("Post [/confirm] to continue")
         ]))
-        # listening_events 为 GroupMessage
         @Waiter.create_using_function([GroupMessage])
         def waiter(
             event : GroupMessage, waiter_group : Group, 
@@ -73,7 +66,7 @@ async def group_messsage_handler(
                 return event
         await inc.wait(waiter)
         await app.sendGroupMessage(group, MessageChain.create([
-            Plain("执行完毕")
+            Plain("\nCompleted")
         ]))
     elif message.asDisplay().startswith("/Menu"):
         await app.sendGroupMessage(group, MessageChain.create([
@@ -83,130 +76,98 @@ async def group_messsage_handler(
     elif message.asDisplay().startswith("/求图"):
         msg = message.asDisplay()
         msg = re.split(r' +', msg)
+        msg_to_send = MessageChain.create([At(member.id)])
         if msg.__len__() > 3 or msg.__len__() <= 1:
-            await app.sendGroupMessage(group, MessageChain.create([
-                At(member.id),
-                Plain("\n不要捣乱哦，要遵守输入格式 : '/求图 关键词 整数[可选]', 请您重新输入~")
-            ]))
+            msg_to_send.plus(MessageChain.create([Plain("\n不要搞事情! 要遵守输入格式 : '/求图 关键词 整数[可选]', 请重新输入~")]))
+            await app.sendGroupMessage(group, msg_to_send)
         elif msg.__len__() == 2:
-            img_url_list = await get_normal_image(msg[1])
-            await app.sendGroupMessage(group, MessageChain.create([
-                At(member.id),
-                Plain("\n您要的图~ "),
-                Image.fromNetworkAddress(img_url_list[0])
-            ]))
+            img_url_list = await getImage.get_normal_image(msg[1])
+            msg_to_send.plus(MessageChain.create([Plain("\n您要的图~ "), Image.fromNetworkAddress(img_url_list[0])]))
+            await app.sendGroupMessage(group, msg_to_send)
         else :
             if re.search(r'\D', msg[2]) != None:
-                await app.sendGroupMessage(group, MessageChain.create([
-                At(member.id),
-                Plain("\n您输入的数字有问题哦~, 请您重新输入 "),
-            ]))
-            else :
-                num = int(msg[2])
-            img_url_list = await get_normal_image(msg[1], num)
-            msg_to_send = ""
-            if img_url_list.__len__() < num:
-                await app.sendGroupMessage(group, MessageChain.create([
-                    At(member.id),
-                    Plain("\n您要的太多了，小的只能找到这么多[卑微~]")
-                ]))
+                await app.sendGroupMessage(group, msg_to_send.plus(MessageChain.create([Plain("\n您输入的数字有问题哦~, 请您重新输入 ")])))
             else:
-                await app.sendGroupMessage(group, MessageChain.create([
-                    At(member.id),
-                    Plain("\n您要的图~ ")
-                ]))
-            i = 0
-            while i < img_url_list.__len__():
-                # 有异常时 else 不执行， 无异常时 else 执行
-                try:
-                    await app.sendGroupMessage(group, MessageChain.create([
-                        Image.fromNetworkAddress(img_url_list[i])
-                        ]))
-                except aiohttp.client_exceptions.InvalidURL:
-                    pass 
-                finally:
-                    i += 1
+                num = int(msg[2])
+                img_url_list = await getImage.get_normal_image(msg[1], num)
+                msg_to_send = ""
+                if img_url_list.__len__() < num:
+                    msg_to_send.plus(MessageChain.create([Plain("\n您要的太多了，小的只能找到这么多[卑微~]")]))
+                else:
+                    msg_to_send.plus(MessageChain.create([Plain("\n您要的图~ ")]))
+                for i in range(0, img_url_list.__len__()):
+                    try:
+                        msg_to_send.plus(MessageChain.create([Image.fromNetworkAddress(img_url_list[i])]))
+                        await app.sendGroupMessage(group, msg_to_send)
+                    except aiohttp.client_exceptions.InvalidURL:
+                        pass
     elif message.asDisplay().startswith("/天气"):
         msg = message.asDisplay()
         msg = re.split(r' +', msg)
-        if (msg.__len__() != 2) :
+        if (msg.__len__() != 2):
             await app.sendGroupMessage(group, MessageChain.create([
                 At(member.id),
-                Plain("不要捣乱哦，要遵守输入格式 : '/天气 城市', 请您重新输入~")
+                Plain("不要搞事情！ 看好输入格式 : '/天气 城市', 请重新输入~")
             ]))
-        else :
+        else:
             city = msg[1]
             city_code = city_code_dict[city]
-            wea_list = await get_weather(city, city_code)
+            wea_list = await getWeather.get_weather(city, city_code)
             wea_dict = wea_list[1]
             string = ""
             for date in wea_dict:
                 string += date + "  ".join(wea_dict[date]) + "\n"
             await app.sendGroupMessage(group, MessageChain.create([
                 At(member.id),
-                Plain("\n["+city+"]  近七日天气情况如下:  \n"),
+                Plain("\n["+city+"] 近七日天气情况如下:  \n"),
                 Plain(string),
-                Plain("数据来源: 中国天气网 " + wea_list[0])
+                Plain("From: " + wea_list[0])
             ]))
     elif message.asDisplay().startswith("/求问"):
         msg = message.asDisplay()
         msg = re.split(r' +', msg)
+        msg_to_send = MessageChain.create([At(member.id)])
         if msg.__len__() > 3 or msg.__len__() <= 1:
-            await app.sendGroupMessage(group, MessageChain.create([
-                At(member.id),
-                Plain("\n不要捣乱哦，要遵守输入格式 : '/求问 第一关键词 第二关键词[Optional]', 请您重新输入一遍~")
-            ]))
+            msg_to_send.plus(MessageChain.create([Plain("\n不要捣乱哦，要遵守输入格式 : '/求问 第一关键词 第二关键词[Optional]', 请您重新输入一遍~")]))
+            await app.sendGroupMessage(group, msg_to_send)
         else :
             firstKeyword = msg[1]
             if firstKeyword in NameList:
-                await app.sendGroupMessage(group, MessageChain.create([
-                    At(member.id),
-                    Plain("\n" + firstKeyword + "太丑了，我才不查他呢，哼~")
-                ]))
+                msg_to_send.plus(MessageChain.create([Plain("\n" + firstKeyword + "太丑了，我才不查他呢，哼~")]))
+                await app.sendGroupMessage(group, msg_to_send)
             elif firstKeyword in SpecialNameList:
-                await app.sendGroupMessage(group, MessageChain.create([
-                    At(member.id),
-                    Plain("\n噢，你说" + firstKeyword + "啊，她是我主人的儿子[doge]~")
-                ]))
-            elif firstKeyword == myconfigs["OwnerName"]:
-                await app.sendGroupMessage(group, MessageChain.create([
-                    At(member.id),
-                    Plain("\nwoo~，你也想知道他嘛，我的主人超强的~")
-                ]))
+                msg_to_send.plus(MessageChain.create([Plain("\n噢，你说" + firstKeyword + "啊，她是我主人的儿子[doge]~")]))
+                await app.sendGroupMessage(group, msg_to_send)
+            elif firstKeyword == myconfigs["OwnerName"] and msg.__len__() == 2:
+                msg_to_send.plus(MessageChain.create([Plain("\nwoo~，你也认识他嘛，我的主人超强的~")]))
+                await app.sendGroupMessage(group, msg_to_send)
             elif firstKeyword == "白敬亭女朋友":
-                await app.sendGroupMessage(group, MessageChain.create([
-                    At(member.id),
-                    Plain("\n他现在还单身哦~~你要加油啦！")
-                ]))
-            elif firstKeyword == "张丹":
-                await app.sendGroupMessage(group, MessageChain.create([
-                    At(member.id),
-                    Plain("\n{}".format(SpecialMessage[firstKeyword]))
-                ]))
-            elif firstKeyword == "陈露":
-                await app.sendGroupMessage(group, MessageChain.create([
-                    At(member.id),
-                    Plain("\n{}".format(SpecialMessage[firstKeyword]))
-                ]))
+                msg_to_send.plus(MessageChain.create([Plain("\n白敬亭现在还单身哦~~你每多zkk吃一顿饭, 你的希望就大一些[doge]")]))
+                await app.sendGroupMessage(group, msg_to_send)
+            elif firstKeyword == "张丹" and msg.__len__() == 2:
+                msg_to_send.plus(MessageChain.create([Plain("\n{}".format(SpecialMessage[firstKeyword]))]))
+                await app.sendGroupMessage(group, msg_to_send)
+            elif firstKeyword == "陈露" and msg.__len__() == 2:
+                msg_to_send.plus(MessageChain.create([Plain("\n{}".format(SpecialMessage[firstKeyword]))]))
+                await app.sendGroupMessage(group, msg_to_send)
             else:
                 if msg.__len__() == 3:
-                    ans = await QueryPedia(firstKeyword, msg[2])
+                    ans = await Baidupedia.QueryPedia(firstKeyword, msg[2])
                 else :
-                    ans = await QueryPedia(firstKeyword)
+                    ans = await Baidupedia.QueryPedia(firstKeyword)
                 brief_introduction = ans[0]
                 movie_url = ans[1]
-                await app.sendGroupMessage(group, MessageChain.create([
-                    At(member.id),
-                    Plain("\n" + brief_introduction)
-                ]))
-                if(movie_url != "") :
+                msg_to_send.plus(MessageChain.create([Plain("\n" + brief_introduction + "\n")]))
+                await app.sendGroupMessage(group, msg_to_send)
+                await asyncio.sleep(1.5)
+                if(movie_url != ""):
                     await app.sendGroupMessage(group, MessageChain.create([
                     Plain(f'有关 [{firstKeyword}] 的短视频介绍在这里哦~\n' + movie_url)
                 ]))
     elif message.asDisplay().startswith("/点歌"):
         msg = message.asDisplay()
         msg = re.search(r'(《.*》)', msg)
-        song_data_dict = await getKugouMusic(msg[1])
+        song_data_dict = await getMusic.getKugouMusic(msg[1])
         msg_to_send = "\n{}\n歌手：{}\n专辑：{}\n".format(song_data_dict["song_name"], song_data_dict["singer_name"], song_data_dict["album_name"])
         await app.sendGroupMessage(group, MessageChain.create([
             At(member.id),
@@ -221,13 +182,62 @@ async def group_messsage_handler(
             Plain(Menu())
         ]))
 
+    elif message.asDisplay().startswith("/微博"):
+        msg = message.asDisplay()
+        msg = re.split(r' +', msg)
+        if msg.__len__() > 3 or msg.__len__() <= 1:
+            await app.sendGroupMessage(group, MessageChain.create([
+                At(member.id),
+                Plain("\n小伙子你不讲武德, 你把输入格式看看好: '/微博 昵称 数量(1~10|按时序先后)")
+            ]))
+        else:
+            nickname = msg[1]
+            if msg.__len__() == 2:
+                num = 2
+            else:
+                num = int(msg[2])
+            blog_list = await getSinaweibo.get_blog(nickname, num)
+            msg_to_send = MessageChain.create([(At(member.id))])
+            if blog_list.__len__() == 0:
+                msg_to_send.plusWith(MessageChain.create([Plain(f"抱歉, [{nickname}]好像不想被您知道~~")]))
+                await app.sendGroupMessage(group, msg_to_send)
+            if num == 0:
+                msg  = "[昵称] : {}\n".format(blog_list[0]["nickname"])
+                msg += "[关注数] : {}\n".format(blog_list[0]["follow_count"])
+                msg += "[粉丝数] : {}\n".format(blog_list[0]["followers_count"])
+                msg += "[微博认证] : {}\n".format(blog_list[0]["verified_reason"]) 
+                msg += "[简介] : {}\n".format(blog_list[0]["description"])
+                msg += "[头像] : \n"
+                msg_to_send.plus(MessageChain.create([Plain(msg)]))
+                msg_to_send.plus(MessageChain.create([Image.fromNetworkAddress(blog_list[0]["profile_img"])]))
+                await app.sendGroupMessage(group, msg_to_send)
+            else:
+                if blog_list.__len__() < num:
+                    num = blog_list.__len__()
+                    msg_to_send.plusWith(MessageChain.create([Plain(f"\n抱歉，暂时只能找到{num}条微博")]))
+                for i in range(0, num):
+                    item = blog_list[i]
+                    msg_st    = "\n"
+                    msg_st   += "[Content] : \n{}\n".format(item["blog_text"])
+                    msg_end   = "[Time] : {}\n".format(item["blog_time"])
+                    msg_end  += "[Phone] : {}\n".format(item["source"])
+                    msg_end  += "[Likes] : {}\n".format(item["attitudes_count"])
+                    msg_end  += "[Comments] : {}\n".format(item["comments_count"])
+                    msg_end  += "[Reposts] : {}\n".format(item["reposts_count"])
+                    msg_to_send.plus(MessageChain.create([Plain(msg_st)]))
+                    if item["blog_imgs"].__len__() > 0:
+                        msg_to_send.plus(MessageChain.create([Image.fromNetworkAddress(img) for img in item["blog_imgs"]]))
+                    msg_to_send.plus(MessageChain.create([Plain(msg_end)]))
+                await app.sendGroupMessage(group, msg_to_send)
+
+
 @bcc.receiver("FriendMessage")
 async def friend_message_listener(
     message : MessageChain, 
     app: GraiaMiraiApplication, 
     friend: Friend
 ):
-    if message.asDisplay().startswith("/天气"):
+    if message.asDisplay().startswith("/天气" or "/weather"):
         msg = message.asDisplay()
         msg = re.split(r' +', msg)
         if (msg.__len__() != 2) :
@@ -237,7 +247,7 @@ async def friend_message_listener(
         else :
             city = msg[1]
             city_code = city_code_dict[city]
-            wea_list = await get_weather(city, city_code)
+            wea_list = await getWeather.get_weather(city, city_code)
             wea_dict = wea_list[1]
             string = ""
             for date in wea_dict:
@@ -245,7 +255,7 @@ async def friend_message_listener(
             await app.sendFriendMessage(friend, MessageChain.create([
                 Plain("["+city+"]  近七日天气情况如下:  \n"),
                 Plain(string),
-                Plain("数据来源: 中国天气网 " + wea_list[0])
+                Plain("From: " + wea_list[0])
             ]))
 
 app.launch_blocking()

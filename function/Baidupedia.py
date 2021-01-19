@@ -12,7 +12,7 @@ headers = {
 
 async def QueryPedia(first_keyword : str, second_keyword : str = None) -> str:
     url_1 = "https://baike.baidu.com/item/" + first_keyword
-    r = requests.get(url_1, headers = headers)
+    r = requests.get(url_1, headers = headers, timeout = 1)
     r.encoding = "utf-8"
     soup = bs4.BeautifulSoup(r.text, features="html.parser")
     best_matched_url = url_1
@@ -46,7 +46,7 @@ async def QueryPedia(first_keyword : str, second_keyword : str = None) -> str:
                 else:
                     best_matched_url = "https://baike.baidu.com" + related_terms_list[corresponding_idx]["href"]
             # 找 introdution
-            r = requests.get(best_matched_url, headers = headers)
+            r = requests.get(best_matched_url, headers = headers, timeout = 1)
             r.encoding = "utf-8"
             soup = bs4.BeautifulSoup(r.text, features="html.parser")
     lemma_summary = soup.find("div", class_ = "lemma-summary")
@@ -62,20 +62,19 @@ async def QueryPedia(first_keyword : str, second_keyword : str = None) -> str:
     return ans
 
 async def get_movie(url_1 : str) -> str:
-    r_1 = requests.get(url_1, headers = headers)
+    r_1 = requests.get(url_1, headers = headers, timeout = 1)
     r_1.encoding = 'utf-8'
-    # 格式 c.initialize({"secondsKnow":[{"videoSrc":{"type":"baikePlayer","secondKind":"1","secondId":
     secondId = re.search(r'{"secondsKnow":\[{"videoSrc":{"type":"baikePlayer","secondKind":"1","secondId":(\d+?),', r_1.text)
     if secondId != None :
         secondId = secondId.group(1)
-    else :
+    else:
         return ""
     url_2 = "https://baike.baidu.com/api/wikisecond/playurl?secondId=" + secondId
     r_2 = requests.get(url_2, headers = headers)
     movie_url = re.search(r'{"mp4Url":"(.*)?",', r_2.text)
     if movie_url != None :
         movie_url = movie_url.group(1)
-    else :
+    else:
         return ""
     movie_url = re.sub(r'\\', "", movie_url)
     return movie_url

@@ -1,6 +1,5 @@
 import re
 import json
-from bs4 import BeautifulSoup
 import asyncio
 import requests
 
@@ -11,7 +10,7 @@ headers = {
 
 async def getKugouMusic(song_name : str, singer_name : str = None) -> dict:
     url_1 = "https://songsearch.kugou.com/song_search_v2?keyword={}&page=1&pagesize=30&userid=-1&clientver=&platform=WebFilter&tag=em&filter=2&iscorrection=1&privilege_filter=0".format(song_name)
-    r_1 = requests.get(url_1, headers=headers)
+    r_1 = requests.get(url_1, headers=headers, timeout = 1)
     r_1.encoding = "utf-8"
     music_data_dict = json.loads(r_1.text)
     music_data = music_data_dict["data"]["lists"][0]
@@ -19,7 +18,7 @@ async def getKugouMusic(song_name : str, singer_name : str = None) -> dict:
     FileHash = music_data["FileHash"]
     url_2 = "https://wwwapi.kugou.com/yy/index.php?r=play/getdata&hash={}&album_id={}".format(FileHash, AlbumID)
     print (url_2)
-    r_2 = requests.get(url_2, headers=headers)
+    r_2 = requests.get(url_2, headers=headers, timeout = 1)
     r_2.encoding = 'utf-8'
     song_data = json.loads(r_2.text)["data"]
     song_url = song_data["play_url"]

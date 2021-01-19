@@ -6,7 +6,7 @@ from typing import Tuple
 
 def get_city_code() -> dict:
     city_code = ""
-    with open("function/city_code.txt", "r") as file:
+    with open("function\city_code.txt", "r", encoding="utf-8") as file:
         city_code = file.read()
     pattern = re.compile(r'{ name : (.*?) , id : (\d+?) }')
     city_code_list = pattern.findall(city_code)
@@ -25,7 +25,7 @@ async def get_weather(city : str, city_code : str) -> list:
     headers = {
         "User-Agent" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.183 Safari/537.36"
     }
-    r = requests.get(url, headers = headers)
+    r = requests.get(url, headers = headers, timeout = 1)
     r.encoding = "utf-8"
     soup = BeautifulSoup(r.text, features="html.parser")
     SevenDayData = soup.find("div", class_ = 'c7d')

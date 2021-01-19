@@ -10,7 +10,7 @@ headers = {
 
 async def get_normal_image(name : str, num : int = 1) -> str:
     url = "https://image.baidu.com/search/index?tn=baiduimage&ps=1&ct=201326592&lm=-1&cl=2&nc=1&ie=utf-8&word={}".format(name)
-    response = requests.get(url = url, headers = headers)
+    response = requests.get(url = url, headers = headers, timeout = 1)
     response.encoding = "utf-8"
     res = response.text
     all_url_list = re.findall(r'"thumbURL":"(.*?)"', res)
