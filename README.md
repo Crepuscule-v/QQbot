@@ -1,8 +1,8 @@
 # A Simple QQbot
 
-#### Base on [`Graia`](https://github.com/GraiaProject/Application)
+#### Base on : [`Graia`](https://github.com/GraiaProject/Application)
 
-***Existing function :***
+***Existing Functions :***
 - [x] 查询天气
 - [x] 搜图
 - [x] Q&A | 词语释义 : 支持 Second Key Word
