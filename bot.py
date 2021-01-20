@@ -1,3 +1,9 @@
+# -*- coding:utf-8 -*-
+
+# @Time    : 2021/1/14
+# @Author  : Crepuscule-v
+# @FileName: Bot.py
+
 import asyncio
 import re
 import aiohttp
@@ -14,7 +20,8 @@ from graia.broadcast.interrupt.waiter import Waiter
 from graia.application.message.elements.internal import Plain, At, Image, App, Xml, Json
 from graia.application.friend import Friend
 from graia.application.event.messages import GroupMessage 
-from function import getImage, getWeather, Baidupedia, getMusic, getSinaweibo
+from function import getImage, getWeather, Baidupedia, getMusic, getSinaweibo, MonitorSina
+from typing import Set, Dict
 
 def Menu() -> str:
     menu = "\n"
@@ -23,8 +30,9 @@ def Menu() -> str:
     menu += "2. [图片]                                  格式：   /求图 关键词 整数[Optional]\n"
     menu += "3. [解释您想知道的词语]         格式:      /求问 第一关键词 第二关键词[Optional]\n"
     menu += "4. [点歌]                                  格式:      /点歌《歌名》\n"
-    menu += "5. [爬取个人微博内容]            格式:       /微博 昵称 数量(1~5|默认为2|0只获取个人信息)\n"
-    menu += "5. [未完待续……]\n"
+    menu += "5. [获取某个人微博内容]             格式:      /微博 昵称 数量[1~3|默认为2|0表示只获取个人信息]\n"
+    menu += "6. [监控某个人的微博，有新动态在第一时间提醒您]           /[具体请联系Owner]\n"    
+    menu += "7. [未完待续……]\n"
     menu += "您有什么需要尽管吩咐, 但要自觉遵守输入规则哦~~"
     return menu
 
@@ -37,11 +45,14 @@ app = GraiaMiraiApplication(
     connect_info = Session(
         host = myconfigs["host"],   # 填入 httpapi 服务运行的地址
         authKey = myconfigs["authKey"],     # 填入 authKey
-        account = myconfigs["account"],     # 你的机器人的 qq 号
+        account = myconfigs["account"],     # 机器人的 qq 号
         websocket = True    # Graia 已经可以根据所配置的消息接收的方式来保证消息接收部分的正常运作.
     )
 )
+
 inc = InterruptControl(bcc)
+
+blog_id_set = set()
 
 @bcc.receiver("GroupMessage")
 async def group_messsage_handler(
@@ -130,7 +141,7 @@ async def group_messsage_handler(
         if msg.__len__() > 3 or msg.__len__() <= 1:
             msg_to_send.plus(MessageChain.create([Plain("\n不要捣乱哦，要遵守输入格式 : '/求问 第一关键词 第二关键词[Optional]', 请您重新输入一遍~")]))
             await app.sendGroupMessage(group, msg_to_send)
-        else :
+        else:
             firstKeyword = msg[1]
             if firstKeyword in NameList:
                 msg_to_send.plus(MessageChain.create([Plain("\n" + firstKeyword + "太丑了，我才不查他呢，哼~")]))
@@ -139,7 +150,7 @@ async def group_messsage_handler(
                 msg_to_send.plus(MessageChain.create([Plain("\n噢，你说" + firstKeyword + "啊，她是我主人的儿子[doge]~")]))
                 await app.sendGroupMessage(group, msg_to_send)
             elif firstKeyword == myconfigs["OwnerName"] and msg.__len__() == 2:
-                msg_to_send.plus(MessageChain.create([Plain("\nwoo~，你也认识他嘛，我的主人超强的~")]))
+                msg_to_send.plus(MessageChain.create([Plain("\n一边去！我主人可不是你想问就能问的~")]))
                 await app.sendGroupMessage(group, msg_to_send)
             elif firstKeyword == "白敬亭女朋友":
                 msg_to_send.plus(MessageChain.create([Plain("\n白敬亭现在还单身哦~~你每多zkk吃一顿饭, 你的希望就大一些[doge]")]))
@@ -199,7 +210,7 @@ async def group_messsage_handler(
             blog_list = await getSinaweibo.get_blog(nickname, num)
             msg_to_send = MessageChain.create([(At(member.id))])
             if blog_list.__len__() == 0:
-                msg_to_send.plusWith(MessageChain.create([Plain(f"抱歉, [{nickname}]好像不想被您知道~~")]))
+                msg_to_send.plus(MessageChain.create([Plain(f"抱歉, [{nickname}]好像不想被您知道~~")]))
                 await app.sendGroupMessage(group, msg_to_send)
             if num == 0:
                 msg  = "[昵称] : {}\n".format(blog_list[0]["nickname"])
@@ -214,13 +225,13 @@ async def group_messsage_handler(
             else:
                 if blog_list.__len__() < num:
                     num = blog_list.__len__()
-                    msg_to_send.plusWith(MessageChain.create([Plain(f"\n抱歉，暂时只能找到{num}条微博")]))
+                    msg_to_send.plus(MessageChain.create([Plain(f"\n抱歉，暂时只能找到{num}条微博")]))
                 for i in range(0, num):
                     item = blog_list[i]
                     msg_st    = "\n"
                     msg_st   += "[Content] : \n{}\n".format(item["blog_text"])
                     msg_end   = "[Time] : {}\n".format(item["blog_time"])
-                    msg_end  += "[Phone] : {}\n".format(item["source"])
+                    msg_end  += "[Source] : {}\n".format(item["source"])
                     msg_end  += "[Likes] : {}\n".format(item["attitudes_count"])
                     msg_end  += "[Comments] : {}\n".format(item["comments_count"])
                     msg_end  += "[Reposts] : {}\n".format(item["reposts_count"])
@@ -230,6 +241,26 @@ async def group_messsage_handler(
                     msg_to_send.plus(MessageChain.create([Plain(msg_end)]))
                 await app.sendGroupMessage(group, msg_to_send)
 
+async def init_blog_id_set(blog_id_set : Set):
+    try:
+        with open("blog_id.txt", 'r') as file:
+            for line in file:
+                tempStr = re.sub(r'\n', '', line)
+                blog_id_set.add(tempStr)
+    except:
+        pass
+    print(blog_id_set)
+
+# 定时模块！！ Thanks for TA
+async def routine_group_task(
+    app : GraiaMiraiApplication
+):
+    await asyncio.sleep(2.5)
+    await MonitorSina.Monitor("Sch_zh", app, 1312213379, 1050869147, blog_id_set)
+    loop.create_task(routine_group_task(app))
+
+loop.create_task(init_blog_id_set(blog_id_set))
+loop.create_task(routine_group_task(app))
 
 @bcc.receiver("FriendMessage")
 async def friend_message_listener(
@@ -240,11 +271,11 @@ async def friend_message_listener(
     if message.asDisplay().startswith("/天气" or "/weather"):
         msg = message.asDisplay()
         msg = re.split(r' +', msg)
-        if (msg.__len__() != 2) :
+        if (msg.__len__() != 2):
             await app.sendFriendMessage(friend, MessageChain.create([
                 Plain("不要捣乱哦，要遵守输入格式 : '/天气 城市', 请您重新输入~"),
             ]))
-        else :
+        else:
             city = msg[1]
             city_code = city_code_dict[city]
             wea_list = await getWeather.get_weather(city, city_code)
