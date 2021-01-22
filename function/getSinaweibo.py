@@ -45,7 +45,7 @@ async def get_basic_info(name : str) -> Dict:
         "profile_img" : user["profile_image_url"],
         "profile_url" : user["profile_url"],
         "followers_count" : user["followers_count"], # 粉丝数量
-        "follow_count" : user["follow_count"],
+        # "follow_count" : user["follow_count"],
         "description" : user["description"],
     }
     personalInfo_dict["verified_reason"] = ""
@@ -135,5 +135,4 @@ async def get_blog(name : str, num : int = 2) -> List:
 
 #DEBUG
 if __name__ == '__main__':
-    asyncio.run(get_blog("Sch_zh", 5))
-    print(blog_id_set)
+    pass

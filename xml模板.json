@@ -1,0 +1,75 @@
+{
+    "app": "com.tencent.structmsg",
+    "config": {
+        "autosize": true,
+        "ctime": 1611163597,
+        "forward": true,
+        "token": "e9e6e9ac354c660a7f834427274401dd",
+        "type": "normal"
+    },
+    "desc": "音乐",
+    "extra": {
+        "app_type": 1,
+        "appid": 100497308,
+        "msg_seq": 6919894955432037376,
+        "uin": 1094877051
+    },
+    "meta": {
+        "music": {
+            "action": "",
+            "android_pkg_name": "",
+            "app_type": 1,
+            "appid": 100497308,
+            "desc": "黄霄雲",
+            "jumpUrl": "https://i.y.qq.com/v8/playsong.html?platform=11&appshare=android_qq&appversion=10080008&hosteuin=oKnq7ecl7inkov**&songmid=003I0GdX2msNaw&type=0&appsongtype=1&_wv=1&source=qq&ADTAG=qfshare",
+            "musicUrl": "http://c6.y.qq.com/rsc/fcgi-bin/fcg_pyq_play.fcg?songid=&songmid=003I0GdX2msNaw&songtype=1&fromtag=50&uin=1094877051&code=E9A48",
+            "preview": "http://y.gtimg.cn/music/photo_new/T002R150x150M000000HJKHt4gHLtA_1.jpg",
+            "sourceMsgId": "0",
+            "source_icon": "",
+            "source_url": "",
+            "tag": "QQ音乐",
+            "title": "星辰大海 (伴奏)"
+        }
+    },
+    "prompt": "[分享]星辰大海 (伴奏)",
+    "ver": "0.0.0.1",
+    "view": "music"
+}
+
+{
+    "app": "com.tencent.structmsg",
+    "config": {
+        "autosize": true,
+        "ctime": 1611163716,
+        "forward": true,
+        "token": "fdee35799c4a13b853911d0c26556cf0",
+        "type": "normal"
+    },
+    "desc": "音乐",
+    "extra": {
+        "app_type": 1,
+        "appid": 100497308,
+        "msg_seq": 6919895466306078055,
+        "uin": 1094877051
+    },
+    "meta": {
+        "music": {
+            "action": "",
+            "android_pkg_name": "",
+            "app_type": 1,
+            "appid": 100497308,
+            "desc": "黄霄雲",
+            "jumpUrl": "https://i.y.qq.com/v8/playsong.html?platform=11&appshare=android_qq&appversion=10080008&hosteuin=oKnq7ecl7inkov**&songmid=003I0GdX2msNaw&type=0&appsongtype=1&_wv=1&source=qq&ADTAG=qfshare",
+            "musicUrl": "http://c6.y.qq.com/rsc/fcgi-bin/fcg_pyq_play.fcg?songid=&songmid=003I0GdX2msNaw&songtype=1&fromtag=50&uin=1094877051&code=E9A48",
+            "preview": "http://y.gtimg.cn/music/photo_new/T002R150x150M000000HJKHt4gHLtA_1.jpg",
+            "sourceMsgId": "0",
+            "source_icon": "",
+            "source_url": "",
+            "tag": "QQ音乐",
+            "title": "星辰大海 (伴奏)"
+        }
+    },
+    "prompt": "[分享]星辰大海 (伴奏)",
+    "ver": "0.0.0.1",
+    "view": "music"
+}

@@ -44,4 +44,4 @@ async def getKugouMusic(song_name : str, singer_name : str = None) -> dict:
     return song_data_dict
 
 if __name__ == "__main__":
-    print(asyncio.run(getKugouMusic("明天,你好")))
+    print(asyncio.run(getKugouMusic("少年他的奇幻漂流")))

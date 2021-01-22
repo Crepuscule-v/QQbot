@@ -9,10 +9,10 @@ headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.183 Safari/537.36",
         "Cookie": "BIDUPSID=91A1503D5D79FE71F78910CD28127214; PSTM=1604569164; BAIDUID=91A1503D5D79FE715477842ED026ADF5:FG=1; __yjs_duid=1_fca8a7300c7e9a3fecb7e7152a9546761608821539130; BDUSS=kNRU0RTVHctYVZHOWZ0Z3BoVWJTb3BLc21KdzVXaFhUV014R2dVMnhuSXBaeVZnRVFBQUFBJCQAAAAAAQAAAAEAAAAVPnMcd2VfY29vcGVyYXRlAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACna~V8p2v1fY; BDUSS_BFESS=kNRU0RTVHctYVZHOWZ0Z3BoVWJTb3BLc21KdzVXaFhUV014R2dVMnhuSXBaeVZnRVFBQUFBJCQAAAAAAQAAAAEAAAAVPnMcd2VfY29vcGVyYXRlAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACna~V8p2v1fY; BDORZ=B490B5EBF6F3CD402E515D22BCDA1598; H_PS_PSSID=33423_33359_33273_31660_33287_26350_33268; delPer=0; PSINO=5; BAIDUID_BFESS=91A1503D5D79FE715477842ED026ADF5:FG=1; BDRCVFR[feWj1Vr5u3D]=I67x6TjHwwYf0; BA_HECTOR=al850l25818gak2gee1g036ar0r; ab_sr=1.0.0_NGMyZmY5ZmRhZDJmNGM3NjlmNjM5ZmJjZTJjZGI3MTk1ZTcxZTJlYTMyMDY5MWM1NWE2Y2U3YzFlMDcwNDFlZTlkZWY5OGNiZGU3NTBmMTE2MTllNTAyNTMyNWY4Y2ZiYzU3ZTc3ZWNlNTM1NGQ3MTFlNDg2YjY3MWJiNzI2OTI=",
     }
-
+# requests.packages.urllib3.disable_warnings()
 async def QueryPedia(first_keyword : str, second_keyword : str = None) -> str:
     url_1 = "https://baike.baidu.com/item/" + first_keyword
-    r = requests.get(url_1, headers = headers, timeout = 1)
+    r = requests.get(url_1, headers = headers, timeout = 1, verify = False)
     r.encoding = "utf-8"
     soup = bs4.BeautifulSoup(r.text, features="html.parser")
     best_matched_url = url_1
@@ -51,7 +51,7 @@ async def QueryPedia(first_keyword : str, second_keyword : str = None) -> str:
             soup = bs4.BeautifulSoup(r.text, features="html.parser")
     lemma_summary = soup.find("div", class_ = "lemma-summary")
     if lemma_summary == None:
-        return "您查询的内容不存在哦~"
+        return ["您查询的内容不存在哦~", ""]
     para = lemma_summary.find_all("div", class_ = "para")
     brief_introduction = ""
     for item in para:
@@ -62,7 +62,7 @@ async def QueryPedia(first_keyword : str, second_keyword : str = None) -> str:
     return ans
 
 async def get_movie(url_1 : str) -> str:
-    r_1 = requests.get(url_1, headers = headers, timeout = 1)
+    r_1 = requests.get(url_1, headers = headers, timeout = 1, verify = False)
     r_1.encoding = 'utf-8'
     secondId = re.search(r'{"secondsKnow":\[{"videoSrc":{"type":"baikePlayer","secondKind":"1","secondId":(\d+?),', r_1.text)
     if secondId != None :
@@ -70,7 +70,7 @@ async def get_movie(url_1 : str) -> str:
     else:
         return ""
     url_2 = "https://baike.baidu.com/api/wikisecond/playurl?secondId=" + secondId
-    r_2 = requests.get(url_2, headers = headers)
+    r_2 = requests.get(url_2, headers = headers, verify = False)
     movie_url = re.search(r'{"mp4Url":"(.*)?",', r_2.text)
     if movie_url != None :
         movie_url = movie_url.group(1)

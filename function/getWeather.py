@@ -6,7 +6,7 @@ from typing import Tuple
 
 def get_city_code() -> dict:
     city_code = ""
-    with open("function\city_code.txt", "r", encoding="utf-8") as file:
+    with open("function\\city_code.txt", "r", encoding="utf-8") as file:
         city_code = file.read()
     pattern = re.compile(r'{ name : (.*?) , id : (\d+?) }')
     city_code_list = pattern.findall(city_code)

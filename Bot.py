@@ -6,6 +6,7 @@
 
 import asyncio
 import re
+import time
 import aiohttp
 from function.config import configs as myconfigs
 from function.config import NameList as NameList
@@ -20,7 +21,7 @@ from graia.broadcast.interrupt.waiter import Waiter
 from graia.application.message.elements.internal import Plain, At, Image, App, Xml, Json
 from graia.application.friend import Friend
 from graia.application.event.messages import GroupMessage 
-from function import getImage, getWeather, Baidupedia, getMusic, getSinaweibo, MonitorSina
+from function import getImage, getWeather, getBaidupedia, getMusic, getSinaweibo, MonitorSina, getBilibili
 from typing import Set, Dict
 
 def Menu() -> str:
@@ -32,12 +33,12 @@ def Menu() -> str:
     menu += "4. [点歌]                                  格式:      /点歌《歌名》\n"
     menu += "5. [获取某个人微博内容]             格式:      /微博 昵称 数量[1~3|默认为2|0表示只获取个人信息]\n"
     menu += "6. [监控某个人的微博，有新动态在第一时间提醒您]           /[具体请联系Owner]\n"    
-    menu += "7. [未完待续……]\n"
+    menu += "7. [爬取B站视频, 默认清晰度为1080P]                格式:       /B站 BV号\n"
+    menu += "8. [未完待续……]\n"
     menu += "您有什么需要尽管吩咐, 但要自觉遵守输入规则哦~~"
     return menu
 
 city_code_dict = getWeather.get_city_code()
-
 loop = asyncio.get_event_loop()
 bcc = Broadcast(loop=loop)
 app = GraiaMiraiApplication(
@@ -51,14 +52,37 @@ app = GraiaMiraiApplication(
 )
 
 inc = InterruptControl(bcc)
-
 blog_id_set = set()
 
+# async def init_blog_id_set(blog_id_set : Set):
+#     try:
+#         with open("blog_id.txt", 'r') as file:
+#             for line in file:
+#                 tempStr = re.sub(r'\n', '', line)
+#                 blog_id_set.add(tempStr)
+#     except:
+#         pass
+#     print(blog_id_set)
+
+# loop.create_task(init_blog_id_set(blog_id_set))
 @bcc.receiver("GroupMessage")
 async def group_messsage_handler(
     message : MessageChain, app : GraiaMiraiApplication, 
     group : Group, member : Member
 ):
+    if message.has(Image):
+        img_url_list = []
+        Image_list = message.get(Image)
+        print(Image_list)
+        for item in Image_list:
+            try:
+                path = re.search(r'-([\d\w]*?)/', item.url).group(1)
+                with open("img\\" + path + '.jpeg', 'wb') as file:
+                    byte_content = await Image.http_to_bytes(item)
+                    file.write(byte_content)
+                    file.close()
+            except:
+                print("图片保存错误")
     if message.asDisplay().startswith("/need_confirm"):
         await app.sendGroupMessage(group, MessageChain.create([
             At(member.id),
@@ -95,13 +119,12 @@ async def group_messsage_handler(
             img_url_list = await getImage.get_normal_image(msg[1])
             msg_to_send.plus(MessageChain.create([Plain("\n您要的图~ "), Image.fromNetworkAddress(img_url_list[0])]))
             await app.sendGroupMessage(group, msg_to_send)
-        else :
+        else:
             if re.search(r'\D', msg[2]) != None:
                 await app.sendGroupMessage(group, msg_to_send.plus(MessageChain.create([Plain("\n您输入的数字有问题哦~, 请您重新输入 ")])))
             else:
                 num = int(msg[2])
                 img_url_list = await getImage.get_normal_image(msg[1], num)
-                msg_to_send = ""
                 if img_url_list.__len__() < num:
                     msg_to_send.plus(MessageChain.create([Plain("\n您要的太多了，小的只能找到这么多[卑微~]")]))
                 else:
@@ -109,9 +132,9 @@ async def group_messsage_handler(
                 for i in range(0, img_url_list.__len__()):
                     try:
                         msg_to_send.plus(MessageChain.create([Image.fromNetworkAddress(img_url_list[i])]))
-                        await app.sendGroupMessage(group, msg_to_send)
-                    except aiohttp.client_exceptions.InvalidURL:
+                    except:
                         pass
+                await app.sendGroupMessage(group, msg_to_send)
     elif message.asDisplay().startswith("/天气"):
         msg = message.asDisplay()
         msg = re.split(r' +', msg)
@@ -163,9 +186,9 @@ async def group_messsage_handler(
                 await app.sendGroupMessage(group, msg_to_send)
             else:
                 if msg.__len__() == 3:
-                    ans = await Baidupedia.QueryPedia(firstKeyword, msg[2])
+                    ans = await getBaidupedia.QueryPedia(firstKeyword, msg[2])
                 else :
-                    ans = await Baidupedia.QueryPedia(firstKeyword)
+                    ans = await getBaidupedia.QueryPedia(firstKeyword)
                 brief_introduction = ans[0]
                 movie_url = ans[1]
                 msg_to_send.plus(MessageChain.create([Plain("\n" + brief_introduction + "\n")]))
@@ -213,8 +236,9 @@ async def group_messsage_handler(
                 msg_to_send.plus(MessageChain.create([Plain(f"抱歉, [{nickname}]好像不想被您知道~~")]))
                 await app.sendGroupMessage(group, msg_to_send)
             if num == 0:
-                msg  = "[昵称] : {}\n".format(blog_list[0]["nickname"])
-                msg += "[关注数] : {}\n".format(blog_list[0]["follow_count"])
+                msg  = ""
+                msg += "[昵称] : {}\n".format(blog_list[0]["nickname"])
+                # msg += "[关注数] : {}\n".format(blog_list[0]["follow_count"])
                 msg += "[粉丝数] : {}\n".format(blog_list[0]["followers_count"])
                 msg += "[微博认证] : {}\n".format(blog_list[0]["verified_reason"]) 
                 msg += "[简介] : {}\n".format(blog_list[0]["description"])
@@ -240,27 +264,48 @@ async def group_messsage_handler(
                         msg_to_send.plus(MessageChain.create([Image.fromNetworkAddress(img) for img in item["blog_imgs"]]))
                     msg_to_send.plus(MessageChain.create([Plain(msg_end)]))
                 await app.sendGroupMessage(group, msg_to_send)
+    elif message.asDisplay().startswith("/test"):
+        await app.sendGroupMessage(group, MessageChain.create([
+            Xml("""
+                <?xml version='1.0' encoding='UTF-8' standalone='yes' ?><msg serviceID="16" templateID="1" action="web" brief="推荐群聊：MyBot、&amp;.&amp;、Crépuscule" sourceMsgId="0" url="https://jq.qq.com/?_wv=1027&amp;k=lHRNHBqa" flag="0" adverSign="0" multiMsgFlag="0"><item layout="0" mode="1" advertiser_id="0" aid="0"><summary>推荐群</summary><hr hidden="false" style="0" /></item><item layout="2" mode="1" advertiser_id="0" aid="0"><picture cover="https://p.qlogo.cn/gh/823218983/823218983/100" w="0" h="0" needRoundView="0" /><title>MyBot、&amp;.&amp;、Crépuscule</title><summary>欢迎加入群聊</summary></item><source name="" icon="" action="" appid="-1" /></msg>"""                
+            )]))
+    elif message.asDisplay().startswith('/B站'):
+        msg = re.split(r' +',message.asDisplay())
+        BV_id = msg[1]
+        msg_to_send = MessageChain.create([At(member.id)])
+        await app.sendGroupMessage(group, MessageChain.create([
+            At(member.id),
+            Plain("\n您要的视频已开始尝试下载, 请耐心等待~")
+        ]))
+        return_msg = await getBilibili.DownloadBilibili(BV_id)
+        if return_msg:
+            msg_to_send.plus(MessageChain.create([Plain(f"\n您的视频已下载完成~，保存位置为[D:\\Mirai\\{BV_id}merged.mkv]")]))
+        else:
+            msg_to_send.plus(MessageChain.create([Plain(f"\n抱歉，您的视频下载失败……")]))
+        await app.sendGroupMessage(group, msg_to_send)
 
-async def init_blog_id_set(blog_id_set : Set):
-    try:
-        with open("blog_id.txt", 'r') as file:
-            for line in file:
-                tempStr = re.sub(r'\n', '', line)
-                blog_id_set.add(tempStr)
-    except:
-        pass
-    print(blog_id_set)
 
-# 定时模块！！ Thanks for TA
-async def routine_group_task(
-    app : GraiaMiraiApplication
-):
-    await asyncio.sleep(2.5)
-    await MonitorSina.Monitor("Sch_zh", app, 1312213379, 1050869147, blog_id_set)
-    loop.create_task(routine_group_task(app))
+# # 定时模块！！ Thanks for TA
+# loop.create_task(routine_group_task(app))
+# async def routine_group_task(
+#     app : GraiaMiraiApplication
+# ):
+#     await asyncio.sleep(2.5)
+#     await MonitorSina.Monitor("Sch_zh", app, 1312213379, 1050869147, blog_id_set)
+#     loop.create_task(routine_group_task(app))
 
-loop.create_task(init_blog_id_set(blog_id_set))
-loop.create_task(routine_group_task(app))
+# async def routine_task(
+#     app : GraiaMiraiApplication
+# ):
+#     if (time.localtime().tm_hour == 9):
+#         await app.sendGroupMessage(1050869147, MessageChain.create([
+#             At(1312213379),
+#             Plain("离放假就剩19天啦，离过年就剩21天啦，加油哦~~~")
+#         ]))
+#     loop.create_task(routine_task(app))
+
+# loop.create_task(routine_task(app))
+# loop.create_task(routine_group_task(app))
 
 @bcc.receiver("FriendMessage")
 async def friend_message_listener(
